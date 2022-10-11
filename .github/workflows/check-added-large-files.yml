@@ -2,35 +2,36 @@
 
 name: CheckLargeFiles
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
-  push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
+  push:
+    branches:
+      - master
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  matrix:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    name: Run ${{ matrix.check }}
+    strategy:
+      matrix:
+        check:
+          - check-added-large-files
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: 📥 Checkout the repository
+        uses: actions/checkout@v3.0.2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo check-added-large-files!
+      - name: 🛠️ Set up Python
+        uses: actions/setup-python@v4.2.0
+        id: python
+        with:
+          python-version: "3.x"
+          cache: 'pip'
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: 📦 Install pre-commit
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          python3 -m pip install pre-commit
+          pre-commit install-hooks --config .github/pre-commit-config.yaml
+      - name: 🏃 Run the check (${{ matrix.check }})
+        run: pre-commit run --hook-stage manual ${{ matrix.check }} --all-files --config .github/pre-commit-config.yaml
