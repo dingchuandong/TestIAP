@@ -31,7 +31,7 @@ jobs:
 
       - name: 📦 Install pre-commit
         run: |
-          python3 -m pip install pre-commit
+          python3 -m pip install git+https://github.com/dingchuandong/pre-commit-hooks.git --user
           pre-commit install-hooks --config .github/pre-commit-config.yaml
       - name: 🏃 Run the check (${{ matrix.check }})
         run: pre-commit run --hook-stage manual ${{ matrix.check }} --all-files --config .github/pre-commit-config.yaml
